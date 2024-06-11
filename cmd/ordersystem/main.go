@@ -8,7 +8,6 @@ import (
 
 	graphql_handler "github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
-	"github.com/streadway/amqp"
 	"github.com/wandermaia/desafio-clean-architecture/configs"
 	"github.com/wandermaia/desafio-clean-architecture/internal/event/handler"
 	"github.com/wandermaia/desafio-clean-architecture/internal/infra/graph"
@@ -16,6 +15,7 @@ import (
 	"github.com/wandermaia/desafio-clean-architecture/internal/infra/grpc/service"
 	"github.com/wandermaia/desafio-clean-architecture/internal/infra/web/webserver"
 	"github.com/wandermaia/desafio-clean-architecture/pkg/events"
+	"github.com/streadway/amqp"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
@@ -35,7 +35,7 @@ func main() {
 	}
 	defer db.Close()
 
-	rabbitMQChannel := getRabbitMQChannel()
+	rabbitMQChannel := getRabbitMQChannel(configs.RabbitUser, configs.RabbitPassword, configs.RabbitHost, configs.RabbitPort)
 
 	eventDispatcher := events.NewEventDispatcher()
 	eventDispatcher.Register("OrderCreated", &handler.OrderCreatedHandler{
@@ -44,12 +44,19 @@ func main() {
 
 	createOrderUseCase := NewCreateOrderUseCase(db, eventDispatcher)
 
+	// Criação do webserver
 	webserver := webserver.NewWebServer(configs.WebServerPort)
 	webOrderHandler := NewWebOrderHandler(db, eventDispatcher)
-	webserver.AddHandler("/order", webOrderHandler.Create)
+
+	//rotas que serão criadas
+	webserver.AddHandler("POST", "/order", webOrderHandler.Create)
+	webserver.AddHandler("GET", "/order", webOrderHandler.GetAllOrders)
+
+	//start do webserver
 	fmt.Println("Starting web server on port", configs.WebServerPort)
 	go webserver.Start()
 
+	// Criação do gRPC
 	grpcServer := grpc.NewServer()
 	createOrderService := service.NewOrderService(*createOrderUseCase)
 	pb.RegisterOrderServiceServer(grpcServer, createOrderService)
@@ -62,6 +69,7 @@ func main() {
 	}
 	go grpcServer.Serve(lis)
 
+	// Criação do graphql
 	srv := graphql_handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{
 		CreateOrderUseCase: *createOrderUseCase,
 	}}))
@@ -72,8 +80,9 @@ func main() {
 	http.ListenAndServe(":"+configs.GraphQLServerPort, nil)
 }
 
-func getRabbitMQChannel() *amqp.Channel {
-	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
+// Função que cria a conexão com o RabbitMQ.
+func getRabbitMQChannel(RabbitUser string, RabbitPassword string, RabbitHost string, RabbitPort string) *amqp.Channel {
+	conn, err := amqp.Dial(fmt.Sprintf("amqp://%s:%s@%s:%s/", RabbitUser, RabbitPassword, RabbitHost, RabbitPort))
 	if err != nil {
 		panic(err)
 	}

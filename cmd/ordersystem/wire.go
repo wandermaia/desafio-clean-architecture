@@ -6,13 +6,13 @@ package main
 import (
 	"database/sql"
 
-	"github.com/google/wire"
 	"github.com/wandermaia/desafio-clean-architecture/internal/entity"
 	"github.com/wandermaia/desafio-clean-architecture/internal/event"
 	"github.com/wandermaia/desafio-clean-architecture/internal/infra/database"
 	"github.com/wandermaia/desafio-clean-architecture/internal/infra/web"
 	"github.com/wandermaia/desafio-clean-architecture/internal/usecase"
 	"github.com/wandermaia/desafio-clean-architecture/pkg/events"
+	"github.com/google/wire"
 )
 
 var setOrderRepositoryDependency = wire.NewSet(

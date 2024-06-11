@@ -3,7 +3,8 @@ module github.com/wandermaia/desafio-clean-architecture
 go 1.22.1
 
 require (
-	github.com/99designs/gqlgen v0.17.47
+	github.com/99designs/gqlgen v0.17.48
+	github.com/go-chi/chi v1.5.5
 	github.com/go-chi/chi/v5 v5.0.12
 	github.com/go-sql-driver/mysql v1.8.1
 	github.com/google/wire v0.6.0
