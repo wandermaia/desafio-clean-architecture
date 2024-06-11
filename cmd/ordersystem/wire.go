@@ -6,13 +6,13 @@ package main
 import (
 	"database/sql"
 
+	"github.com/google/wire"
 	"github.com/wandermaia/desafio-clean-architecture/internal/entity"
 	"github.com/wandermaia/desafio-clean-architecture/internal/event"
 	"github.com/wandermaia/desafio-clean-architecture/internal/infra/database"
 	"github.com/wandermaia/desafio-clean-architecture/internal/infra/web"
 	"github.com/wandermaia/desafio-clean-architecture/internal/usecase"
 	"github.com/wandermaia/desafio-clean-architecture/pkg/events"
-	"github.com/google/wire"
 )
 
 var setOrderRepositoryDependency = wire.NewSet(
@@ -39,6 +39,15 @@ func NewCreateOrderUseCase(db *sql.DB, eventDispatcher events.EventDispatcherInt
 		usecase.NewCreateOrderUseCase,
 	)
 	return &usecase.CreateOrderUseCase{}
+}
+
+// Dependência para injeção no usecase NewGetAllOrdersUseCase
+func NewGetAllOrdersUseCase(db *sql.DB) *usecase.GetAllOrdersUseCase {
+	wire.Build(
+		setOrderRepositoryDependency,
+		usecase.NewGetAllOrdersUseCase,
+	)
+	return &usecase.GetAllOrdersUseCase{}
 }
 
 func NewWebOrderHandler(db *sql.DB, eventDispatcher events.EventDispatcherInterface) *web.WebOrderHandler {

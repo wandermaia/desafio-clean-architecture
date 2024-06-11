@@ -8,6 +8,7 @@ import (
 
 	graphql_handler "github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
+	"github.com/streadway/amqp"
 	"github.com/wandermaia/desafio-clean-architecture/configs"
 	"github.com/wandermaia/desafio-clean-architecture/internal/event/handler"
 	"github.com/wandermaia/desafio-clean-architecture/internal/infra/graph"
@@ -15,7 +16,6 @@ import (
 	"github.com/wandermaia/desafio-clean-architecture/internal/infra/grpc/service"
 	"github.com/wandermaia/desafio-clean-architecture/internal/infra/web/webserver"
 	"github.com/wandermaia/desafio-clean-architecture/pkg/events"
-	"github.com/streadway/amqp"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
@@ -43,6 +43,7 @@ func main() {
 	})
 
 	createOrderUseCase := NewCreateOrderUseCase(db, eventDispatcher)
+	getAllOrdersUseCase := NewGetAllOrdersUseCase(db)
 
 	// Criação do webserver
 	webserver := webserver.NewWebServer(configs.WebServerPort)
@@ -71,7 +72,8 @@ func main() {
 
 	// Criação do graphql
 	srv := graphql_handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{
-		CreateOrderUseCase: *createOrderUseCase,
+		CreateOrderUseCase:  *createOrderUseCase,
+		GetAllOrdersUseCase: *getAllOrdersUseCase,
 	}}))
 	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
 	http.Handle("/query", srv)

@@ -6,7 +6,7 @@ package graph
 
 import (
 	"context"
-	"fmt"
+	"log"
 
 	"github.com/wandermaia/desafio-clean-architecture/internal/infra/graph/model"
 	"github.com/wandermaia/desafio-clean-architecture/internal/usecase"
@@ -33,7 +33,33 @@ func (r *mutationResolver) CreateOrder(ctx context.Context, input *model.OrderIn
 
 // Orders is the resolver for the orders field.
 func (r *queryResolver) Orders(ctx context.Context) ([]*model.Order, error) {
-	panic(fmt.Errorf("not implemented: Orders - orders"))
+
+	log.Printf("GetAll Orders GraphQL")
+
+	// Buscando todas as ordens existentes. O retorno é uma struct que contém apenas um elemento: um slice de orders.
+
+	log.Printf("Coletando as ordens")
+	orders, err := r.GetAllOrdersUseCase.GetAllOrders()
+	if err != nil {
+		log.Printf("Erro ao coletar as Orders do useCase (GraphQL): %s", err)
+		return nil, err
+	}
+
+	// Slice que será utilizado para receber as ordens e retornar os valores
+	var ordersModel []*model.Order
+
+	//loop para adicionar todas as ordens no slice.
+	for _, order := range orders.Orders {
+		ordersModel = append(ordersModel, &model.Order{
+			ID:         order.ID,
+			Price:      order.Price,
+			Tax:        order.Tax,
+			FinalPrice: order.FinalPrice,
+		})
+	}
+
+	// Retornando todas as orders utilizando o modelo de orders
+	return ordersModel, nil
 }
 
 // Mutation returns MutationResolver implementation.
