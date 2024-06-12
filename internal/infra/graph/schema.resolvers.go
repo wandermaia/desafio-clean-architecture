@@ -36,9 +36,8 @@ func (r *queryResolver) Orders(ctx context.Context) ([]*model.Order, error) {
 
 	log.Printf("GetAll Orders GraphQL")
 
-	// Buscando todas as ordens existentes. O retorno é uma struct que contém apenas um elemento: um slice de orders.
-
 	log.Printf("Coletando as ordens")
+	// Buscando todas as ordens existentes. O retorno é uma struct que contém apenas um elemento: um slice de orders.
 	orders, err := r.GetAllOrdersUseCase.GetAllOrders()
 	if err != nil {
 		log.Printf("Erro ao coletar as Orders do useCase (GraphQL): %s", err)

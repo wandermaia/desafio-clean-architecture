@@ -145,6 +145,23 @@ O resolver é o que o schema executa para tratar processar os métodos e funçõ
 No arquivo `resolver.go` são injetadas as dependências para serem utilizadas no `schema.resolvers.go`
 
 
+### gRPC
+
+Adicionadas informações no arquivo order.proto
+
+O comando para gerar os arquivos, deve ser executado a partir da raiz do projeto para garantir que os arquivos fiquem nas pastas corretas.
+
+```bash
+
+protoc --go_out=. --go-grpc_out=. internal/infra/grpc/protofiles/order.proto
+
+go mod tidy
+
+
+```
+
+Após a execução será criada uma entrada no arquivo `order_grpc.pb.go`, dentro da interface `OrderServiceClient`referente ao serviço. Essa interface deve ser implementada no arquivo `order_service.go`. 
+
 
 ## Use cases list orders
 
