@@ -31,7 +31,7 @@ Abaixo seguem algumas informações sobre a implementação
 
 - A criação da tabela orders no banco de dados é gerada pelo docker-compose através do arquivo `/sql/initdb.sql`. Esta abordagem foi escolhida por ser mais simples e atender a necessidade do projeto.
 
-- Foi adicionada a chamada para listagem das orders no arquivo `/api/api.http`, este pode ser utilizado para realizar as chamadas REST no webserver.
+
 
 
 ## Instruções para Inicialização
@@ -55,6 +55,8 @@ Com os containers já no ar, basta entrar na pasta `/cmd/ordersystem` e executar
 
 ```bash
 
+wander@bsnote283:~/desafio-clean-architecture$ go mod tidy
+wander@bsnote283:~/desafio-clean-architecture$ 
 wander@bsnote283:~/desafio-clean-architecture$ cd cmd/ordersystem/
 wander@bsnote283:~/desafio-clean-architecture/cmd/ordersystem$ ls
 main.go  wire_gen.go  wire.go
@@ -104,200 +106,39 @@ No caso do GraphQL, podemos acessar o playground do GraphQL, através do localho
 ![graphql.png](/.img/graphql.png)
 
 
-## Anotações
+## Referências
 
- - verificar a pasta de entiy
- - Verifiar a pasta de use cases - eles trabalham com interfaces e apontam para os entities
+Golang chi
 
+https://github.com/go-chi/chi
 
- Repository fazem os acessos ao banco de dados.
-        order_repository.go que acessa o banco de daods
+Viper
 
+https://github.com/spf13/viper
 
-O order_handler.go (dentro do web) que executa o use case
+gqlgen
 
+https://gqlgen.com/
 
-## Atividades
+gRPC IO
 
+https://grpc.io
 
-- Adicionado funções no internal/infra/database/order_repository.go (criada a função `GetAllOrders`)
-- Adicionados testes no arquivo internal/infra/database/order_repository_test.go para a função criada em `order_repository.go`
-- Adicionada função `GetAllOrders() ([]Order, error)` na interface internal/entity/interface.go
-- Criado o arquivo do caso de uso `get_all_orders.go`
+Protocol Buffers
 
-### WebServer
+https://protobuf.dev/
 
-- Criar a função getAll ho order_handler.go utilizando o caso de uso GetAllOrdersUseCase
-- No webswerver.go, foram realizadas as seguintes modificações
 
-Criada struct DadosHandler para armazenar o handler e o path, utilizando o método como chave. O ideal seria uma chave composta para garantir que um método não vai sobrepor ao de outra rota.
+Protocol Buffer Compiler Installation
 
-Na struct do webserver, foi alterado o item Handlers para HandlersByMethods e foi modificada a estrutura. Agora ele é um map de string (o método) para o objeto DadosHandler, que contém o path e o handler do webserver que será utilizado.
+https://grpc.io/docs/protoc-installation/
 
-Foi necessário altear a chamada ao método AddHandler a partir do main, para que o verbo HTTP também fosse enviado por parâmetro.
 
-Ajustada também a conexão do rabbit para utilizar as variáveis de ambiente.
+Evans
 
+https://github.com/ktr0731/evans
 
-Endpoint REST (GET /order)
 
+Wire: Automated Initialization in Go
 
-
-### Graphql
-
-
-Criar o arquivo tools.go para colocar as dependências. Ele gera a estratura de pastas, mas não necessariamento serão utilizados on programa. São módulos de apoio para gerar código, por exemplo. é utilizado pelo gqlgen para rodar o comando abaixo.
-
-```bash
-
-printf '// +build tools\npackage tools\nimport (_ "github.com/99designs/gqlgen"\n _ "github.com/99designs/gqlgen/graphql/introspection")' | gofmt > tools.go
-
-go mod tidy
-
-
-
-wander@bsnote283:~$ go run github.com/99designs/gqlgen init
-Creating gqlgen.yml
-Creating graph/schema.graphqls
-Creating server.go
-Generating...
-
-Exec "go run ./server.go" to start GraphQL server
-wander@bsnote283:~$ 
-
-go mod tidy
-
-
-```
-Foi criado o arquivo gqlgen.yml, graph/schema.graphqls e server.go
-
-
-
-o arquivo `schema.graphqls` gera o conteúdo da pasta model. Os arquivos de model não podem ser editados diretamente;
-
-
-O type query no do `schema.graphqls` no módulo de graphql volta todas as categorias e cursos. POde ser um bom exemplo.
-
-O type mutation é uma edição nos dados que também fica nesse arquivo. 
-
-O arquivo model_gen tem as structs que foram geradas automaticamente pelo arquivo shcema para serem utilziadas.
-
-Após as edições, temos que executar o generate para ajustar os arquivos (pode apresentar alguns erros referentes a todo list):
-
-```bash
-
-wander@bsnote283:~$ go run github.com/99designs/gqlgen generate
-
-go mod tidy
-
-
-```
-
-Remover os dados antigos  antigos do `schema.resolvers.go`. Quando gera novamente, ele move os daods para baixo e ifnorma que são antigos.
-
-O resolver é o que o schema executa para tratar processar os métodos e funções.
-
-No arquivo `resolver.go` são injetadas as dependências para serem utilizadas no `schema.resolvers.go`
-
-
-### gRPC
-
-Adicionadas informações no arquivo order.proto
-
-O comando para gerar os arquivos, deve ser executado a partir da raiz do projeto para garantir que os arquivos fiquem nas pastas corretas.
-
-```bash
-
-protoc --go_out=. --go-grpc_out=. internal/infra/grpc/protofiles/order.proto
-
-go mod tidy
-
-
-```
-
-Após a execução será criada uma entrada no arquivo `order_grpc.pb.go`, dentro da interface `OrderServiceClient`referente ao serviço. Essa interface deve ser implementada no arquivo `order_service.go`. 
-
-
-## Use cases list orders
-
-
-Para usar o usecase, no order_handler.go foi adicionado o dto usecase.OrderInputDTO para entada dos dados. Na saída ele recebeu o retorno
-output, err := createOrder.Execute(dto), que devolveu o DTO OrderOutputDTO
-
-+++++++++++++++++++++++++
-
-Projeto DI (Dependece Injection) tem uma estrutura próxima do clean architect
-
-No main ficou assim:
-
-- Criou um repositório
-Criou um usecase passando o repositorio como parametro
-usou o usecase.GetProducti(1)
-
-Essas dependências foram criadas pelo wire. Ficou assim:
-
-func NewUseCase(db *sql.DB) *product.ProductUseCase {
-	productRepository := product.NewProductRepository(db)
-	productUseCase := product.NewProductUseCase(productRepository)
-	return productUseCase
-}
-
-
-## Migrate
-
-Instalar o migrate
-
-Criar o migrate
-```bash
-
-wander@bsnote283:~/pos-golang-sqlc$ migrate create -ext=sql -dir=sql/migrations -seq init
-/home/wander/pos-golang-sqlc/sql/migrations/000001_init.up.sql
-/home/wander/pos-golang-sqlc/sql/migrations/000001_init.down.sql
-wander@bsnote283:~/pos-golang-sqlc$ 
-wander@bsnote283:~/pos-golang-sqlc$ tree
-.
-├── README.md
-└── sql
-    └── migrations
-        ├── 000001_init.down.sql
-        └── 000001_init.up.sql
-
-2 directories, 3 files
-wander@bsnote283:~/pos-golang-sqlc$ 
-
-
-# criar migration com docker compose
-
-docker compose -f docker-compose.yaml --profile tools run --rm migrate create -ext=sql -dir=sql/migrations -seq init
-docker compose -f docker-compose.yaml --profile tools run --rm migrate up
-
-
-```
-Executando o migrate up no MySQL
-
-
-```bash
-
-docker-compose exec mysql bash
-mysql -uroot -p orders
-show tables;
-desc orders;
-select * from orders;
-```
-
-```bash
-
-migrate -path=sql/migrations -database "mysql://root:root@tcp(localhost:3306)/orders" -verbose up
-migrate -path=sql/migrations -database "mysql://root:root@tcp(localhost:3306)/orders" -verbose down
-
-
-```
-
-Executando o migrate (via Makefile):
-
-```bash
-
-make migrate
-make migratedown
-
-```
+https://github.com/google/wire
