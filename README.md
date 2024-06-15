@@ -71,7 +71,7 @@ Starting GraphQL server on port 8080
 >
 > - O servidor gRPC é sendo executado na porta **50051**
 >
-> - O servidor GraphQL é sendo executado na porta **50051**
+> - O servidor GraphQL é sendo executado na porta **8080**
 >
 
 Feito isso, os três servidores já estão aptos a receber as chamadas.
@@ -89,9 +89,20 @@ Para a execução das chamadas no webserver, pode ser utilizado o próprio VSCod
 
 ![http.png](/.img/http.png)
 
+
 ### gRPC
 
+Para realizar as consultas gRPC, pode ser utilizado o **Evans**. Abaixo segue um exemplo dele em execução no projeto:
+
+![evans.png](/.img/evans.png)
+
+
 ### GraphQL
+
+No caso do GraphQL, podemos acessar o playground do GraphQL, através do localhost (porta 8080) no Browser:
+
+![graphql.png](/.img/graphql.png)
+
 
 ## Anotações
 
