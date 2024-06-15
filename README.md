@@ -1,14 +1,97 @@
+# **Repositório para o Desafio de Clean Architecture da Pós de Go Expert**
+
+Este repositório foi criado exclusivamente para hospedar o desenvolvimento do Desfio sobre Clean Architecture da **Pós Go Expert**, ministrado pela **Full Cycle**.
+
+
+## Descrição do Desafio
+
 Olá devs!
-Agora é a hora de botar a mão na massa. Para este desafio, você precisará criar o usecase de listagem das orders.
-Esta listagem precisa ser feita com:
+
+Agora é a hora de botar a mão na massa. Para este desafio, você precisará criar o usecase de listagem das orders. Esta listagem precisa ser feita com:
+
 - Endpoint REST (GET /order)
+
 - Service ListOrders com GRPC
+
 - Query ListOrders GraphQL
-Não esqueça de criar as migrações necessárias e o arquivo api.http com a request para criar e listar as orders.
+
+Não esqueça de criar as migrações necessárias e o arquivo `api.http` com a request para criar e listar as orders.
 
 Para a criação do banco de dados, utilize o Docker (Dockerfile / docker-compose.yaml), com isso ao rodar o comando docker compose up tudo deverá subir, preparando o banco de dados.
+
 Inclua um README.md com os passos a serem executados no desafio e a porta em que a aplicação deverá responder em cada serviço.
 
+
+## Informações sobre a Implementação
+
+
+Abaixo seguem algumas informações sobre a implementação
+
+- Foi criado um usecase para realizar a listagem das orders.
+
+- A criação da tabela orders no banco de dados é gerada pelo docker-compose através do arquivo `/sql/initdb.sql`. Esta abordagem foi escolhida por ser mais simples e atender a necessidade do projeto.
+
+- Foi adicionada a chamada para listagem das orders no arquivo `/api/api.http`, este pode ser utilizado para realizar as chamadas REST no webserver.
+
+
+## Instruções para Inicialização
+
+
+Após clonar o repositório, deve-se entrar na pasta raiz e executar o comando docker-compose. A seguir está um exemplo da execução do comando no projeto:
+
+
+```bash
+wander@bsnote283:~/desafio-clean-architecture$ docker-compose up -d
+Creating network "desafio-clean-architecture_default" with the default driver
+Creating mysql    ... done
+Creating rabbitmq ... done
+wander@bsnote283:~/desafio-clean-architecture$
+
+```
+
+Com essa execução, será inicializado o container do MySQL (já com o banco e a tabela criados) e do container do RabbitMQ.
+
+Com os containers já no ar, basta entrar na pasta `/cmd/ordersystem` e executar o comando "go run main.go wire_gen.go", conforme abaixo:
+
+```bash
+
+wander@bsnote283:~/desafio-clean-architecture$ cd cmd/ordersystem/
+wander@bsnote283:~/desafio-clean-architecture/cmd/ordersystem$ ls
+main.go  wire_gen.go  wire.go
+wander@bsnote283:~/desafio-clean-architecture/cmd/ordersystem$ go run main.go wire_gen.go
+Starting web server on port :8000
+Starting gRPC server on port 50051
+Starting GraphQL server on port 8080
+
+```
+
+> **OBSERVAÇÕES**
+>
+> - O servidor WEB é sendo executado na porta **8000**
+>
+> - O servidor gRPC é sendo executado na porta **50051**
+>
+> - O servidor GraphQL é sendo executado na porta **50051**
+>
+
+Feito isso, os três servidores já estão aptos a receber as chamadas.
+
+
+
+## Realização das Chamadas
+
+A seguir estão algumas informações a respeito das chamdas
+
+
+### WEBSERVER
+
+Para a execução das chamadas no webserver, pode ser utilizado o próprio VSCode atrvés do arquivo `api/api.http`. Abaixo segue um exemplo da sua utilização:
+
+![http.png](/.img/http.png)
+
+### gRPC
+
+### GraphQL
 
 ## Anotações
 
@@ -50,45 +133,6 @@ Endpoint REST (GET /order)
 
 
 ### Graphql
-
-Ao tentar inicializar copiando os arquivos, o erro abaixo é apresentado:
-
-```bash
-
-wander@bsnote283:~/repos/CURSO-GO/desafios/desafio-clean-architecture/cmd/ordersystem$ go run main.go wire_gen.go 
-# github.com/wandermaia/desafio-clean-architecture/internal/infra/graph
-../../internal/infra/graph/generated.go:2497:2: not enough arguments in call to out.Dispatch
-	have ()
-	want (context.Context)
-../../internal/infra/graph/generated.go:2546:2: not enough arguments in call to out.Dispatch
-	have ()
-	want (context.Context)
-../../internal/infra/graph/generated.go:2588:2: not enough arguments in call to out.Dispatch
-	have ()
-	want (context.Context)
-../../internal/infra/graph/generated.go:2641:2: not enough arguments in call to out.Dispatch
-	have ()
-	want (context.Context)
-../../internal/infra/graph/generated.go:2684:2: not enough arguments in call to out.Dispatch
-	have ()
-	want (context.Context)
-../../internal/infra/graph/generated.go:2741:2: not enough arguments in call to out.Dispatch
-	have ()
-	want (context.Context)
-../../internal/infra/graph/generated.go:2784:2: not enough arguments in call to out.Dispatch
-	have ()
-	want (context.Context)
-../../internal/infra/graph/generated.go:2838:2: not enough arguments in call to out.Dispatch
-	have ()
-	want (context.Context)
-../../internal/infra/graph/generated.go:2902:2: not enough arguments in call to out.Dispatch
-	have ()
-	want (context.Context)
-wander@bsnote283:~/repos/CURSO-GO/desafios/desafio-clean-architecture/cmd/ordersystem$ 
-
-
-
-```
 
 
 Criar o arquivo tools.go para colocar as dependências. Ele gera a estratura de pastas, mas não necessariamento serão utilizados on programa. São módulos de apoio para gerar código, por exemplo. é utilizado pelo gqlgen para rodar o comando abaixo.
@@ -186,3 +230,63 @@ func NewUseCase(db *sql.DB) *product.ProductUseCase {
 	productUseCase := product.NewProductUseCase(productRepository)
 	return productUseCase
 }
+
+
+## Migrate
+
+Instalar o migrate
+
+Criar o migrate
+```bash
+
+wander@bsnote283:~/pos-golang-sqlc$ migrate create -ext=sql -dir=sql/migrations -seq init
+/home/wander/pos-golang-sqlc/sql/migrations/000001_init.up.sql
+/home/wander/pos-golang-sqlc/sql/migrations/000001_init.down.sql
+wander@bsnote283:~/pos-golang-sqlc$ 
+wander@bsnote283:~/pos-golang-sqlc$ tree
+.
+├── README.md
+└── sql
+    └── migrations
+        ├── 000001_init.down.sql
+        └── 000001_init.up.sql
+
+2 directories, 3 files
+wander@bsnote283:~/pos-golang-sqlc$ 
+
+
+# criar migration com docker compose
+
+docker compose -f docker-compose.yaml --profile tools run --rm migrate create -ext=sql -dir=sql/migrations -seq init
+docker compose -f docker-compose.yaml --profile tools run --rm migrate up
+
+
+```
+Executando o migrate up no MySQL
+
+
+```bash
+
+docker-compose exec mysql bash
+mysql -uroot -p orders
+show tables;
+desc orders;
+select * from orders;
+```
+
+```bash
+
+migrate -path=sql/migrations -database "mysql://root:root@tcp(localhost:3306)/orders" -verbose up
+migrate -path=sql/migrations -database "mysql://root:root@tcp(localhost:3306)/orders" -verbose down
+
+
+```
+
+Executando o migrate (via Makefile):
+
+```bash
+
+make migrate
+make migratedown
+
+```

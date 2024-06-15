@@ -1,4 +1,4 @@
-version: '3'
+version: '3.3'
 
 services:
   mysql:
@@ -13,6 +13,7 @@ services:
       - 3306:3306
     volumes:
       - .docker/mysql:/var/lib/mysql
+      - ./sql:/docker-entrypoint-initdb.d
 
   rabbitmq:
     image: rabbitmq:3-management
